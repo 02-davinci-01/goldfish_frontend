@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import axios from "axios";
 import PetalCanvas from "../../components/PetalCanvas";
+import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
+import { useRouter } from "next/navigation";
 import styles from "./login.module.css";
 
 /**
@@ -16,6 +19,15 @@ export default function EnterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [flipped, setFlipped] = useState([false, false, false]);
+  const [loading, setLoading] = useState(false);
+
+  const [crumbText, setCrumbText] = useState("");
+  const [crumbType, setCrumbType] = useState<"info" | "success" | "error">(
+    "info"
+  );
+  const [crumbVisible, setCrumbVisible] = useState(false);
+
+  const router = useRouter();
 
   function toggleFlip(i: number) {
     setFlipped((s) => {
@@ -25,10 +37,47 @@ export default function EnterPage() {
     });
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  function showBreadcrumb(
+    message: string,
+    type: "info" | "success" | "error" = "info"
+  ) {
+    setCrumbText(message);
+    setCrumbType(type);
+    setCrumbVisible(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    console.log("submit", { username, password });
-    alert("Pretend login success — check console.");
+
+    setLoading(true);
+    try {
+      const envBase = (process.env.NEXT_PUBLIC_BACKEND_URL as string) || "";
+      const originFallback =
+        typeof window !== "undefined" ? window.location.origin : "";
+      const base = envBase && envBase.trim() ? envBase : originFallback;
+      const url = `${base.replace(/\/$/, "")}/login`;
+
+      const payload = {
+        name: username,
+        password,
+      };
+
+      const res = await axios.post(url, payload);
+
+      console.log("login response", res);
+
+      showBreadcrumb("Login successful — redirecting…", "success");
+
+      // small delay to let the breadcrumb show
+      setTimeout(() => router.push("/dashboard"), 700);
+    } catch (err) {
+      console.error("login error", err);
+
+      // Always show requested error phrase on wrong credentials
+      showBreadcrumb("dhyaan se socho -.-", "error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const cards = [
@@ -49,6 +98,14 @@ export default function EnterPage() {
   return (
     <div className={styles.page}>
       <PetalCanvas />
+
+      {/* Breadcrumb (aesthetic site notification) */}
+      <Breadcrumb
+        text={crumbText}
+        type={crumbType}
+        visible={crumbVisible}
+        onClose={() => setCrumbVisible(false)}
+      />
 
       <div className={styles.centerWrap}>
         <div
@@ -142,8 +199,9 @@ export default function EnterPage() {
                   type="submit"
                   className={styles.enterBtn}
                   aria-label="Log in"
+                  disabled={loading}
                 >
-                  aomt i am
+                  {loading ? "sending..." : "aomt i am"}
                 </button>
 
                 <Link href="/" className={styles.smallLink} aria-label="Back">
