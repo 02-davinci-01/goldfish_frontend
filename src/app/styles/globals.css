@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:wght@400;600&display=swap');
+
+:root{
+  --bg: #fff8fb;
+  --card: #ffffff;
+  --muted: #9b8aa7;
+  --pink-100: #ffeef6;
+  --pink-300: #ffb6d5;
+  --pink-500: #ff7ab6;
+  --accent: #ff6aa3;
+  --glass: rgba(255,255,255,0.6);
+  --glass-2: rgba(255,255,255,0.85);
+  --shadow: 0 6px 24px rgba(16, 14, 23, 0.08);
+}
+
+html,body,#__next{
+  height:100%;
+  background: linear-gradient(180deg, var(--bg) 0%, #fff 100%);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Core fonts */
+body { font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:#2a2540; }
+
+/* Heading font utility */
+.font-display { font-family: 'Playfair Display', serif; }
+
+/* Decorative subtle grain (very subtle) */
+.page-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(0,0,0,0.01) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+}
+
+/* Glass card style */
+.card {
+  background: linear-gradient(180deg, var(--glass) 0%, rgba(255,255,255,0.72) 100%);
+  backdrop-filter: blur(6px) saturate(120%);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255,255,255,0.6);
+}
+
+/* Pink CTA */
+.cta {
+  background: linear-gradient(90deg, var(--pink-500), var(--accent));
+  color: white;
+  border-radius: 12px;
+  padding: 12px 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  transition: transform .14s ease, box-shadow .14s ease;
+  box-shadow: 0 8px 20px rgba(255,106,163,0.14);
+}
+.cta:focus, .cta:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(255,106,163,0.18); outline: none; }
+
+/* Subtle link style */
+.link-muted { color: var(--muted); text-decoration: underline dotted; text-underline-offset: 4px; }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .hero-grid { grid-template-columns: 1fr !important; gap: 1.2rem; padding: 2rem; }
+  .desktop-only { display: none; }
+}
+
+/* Small utilities */
+.kicker { color:var(--pink-500); font-weight:600; letter-spacing:0.06em; text-transform:uppercase; font-size:0.72rem; }
+.vision { color:#3b2f4a; opacity:0.95; }
+.small-muted { color:var(--muted); font-size:0.88rem; }
+
+/* Tiny rounded pill */
+.pill { background: var(--pink-100); color:var(--pink-500); padding: 6px 10px; border-radius: 999px; font-weight:600; font-size:0.8rem; border:1px solid rgba(255,118,170,0.06); }
+
+/* Footer */
+.site-footer { color: #6b6076; opacity: 0.9; font-size:0.85rem; }
+
+/* End */

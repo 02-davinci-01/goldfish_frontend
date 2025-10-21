@@ -1,26 +1,184 @@
-@import "tailwindcss";
+/* globals.css — final tweaks: left-aligned, pink kicker, smoother sustained cursor glow */
 
+/* Reset */
+*,
+*::before,
+*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Variables */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-dark: #05030a;
+  --glass-bg: rgba(25, 25, 30, 0.85); /* slightly less transparent - darker */
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --accent-pink: #ff6aa3; /* kicker pink */
+  --pink-cta-start: #ff7ab6;
+  --pink-cta-end: #ff66a3;
+  --muted-white: rgba(255, 255, 255, 0.78);
+  --radius: 16px;
+  --cursor-width: 10px;
+  --cursor-color: rgba(255, 255, 255, 0.95);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base */
+html, body, #__next { height: 100%; }
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #06040a 0%, var(--bg-dark) 100%);
+  color: #fff;
+  font-family: SpecialElite, Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Page container */
+.page {
+  position: relative;
+  min-height: 100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+/* Petal canvas */
+.petal-canvas { position:absolute; inset:0; z-index:0; pointer-events:none; }
+
+/* Hero wrapper */
+.hero-wrap { position:relative; z-index:4; width:94%; max-width:780px; display:flex; align-items:center; justify-content:center; padding:48px 20px; }
+
+/* Darker less-transparent glass (no pink) */
+.glass {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 32px;
+  backdrop-filter: blur(14px) saturate(110%);
+  -webkit-backdrop-filter: blur(14px) saturate(110%);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.75);
+  transition: transform 220ms ease, box-shadow 220ms ease;
+}
+.glass:hover { transform: translateY(-4px); }
+
+/* sheen edge */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(145deg, rgba(255,255,255,0.06), rgba(0,0,0,0.18));
+  pointer-events: none;
+}
+
+/* soft neutral halo */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(80,80,80,0.02) 40%, transparent 70%);
+  filter: blur(36px);
+  opacity: 0.14;
+  pointer-events: none;
+}
+
+/* Macbar */
+.mac-bar { display:flex; align-items:center; gap:12px; height:36px; width:100%; position:absolute; left:0; top:8px; padding:0 14px; pointer-events:none; }
+.mac-dots { display:flex; gap:8px; } .mac-dot { width:10px; height:10px; border-radius:50%; } .mac-dot.red{background:#ff5f56} .mac-dot.yellow{background:#ffbd2e} .mac-dot.green{background:#28c93f}
+.mac-lines { margin-left:auto; display:flex; gap:8px; } .mac-line { width:84px; height:7px; background: linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02)); border-radius:4px; }
+
+/* Kicker (left-aligned & pink + glow) */
+.kicker {
+  font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--accent-pink);
+  text-shadow:
+    0 0 6px rgba(255, 106, 163, 0.28),
+    0 0 12px rgba(255, 106, 163, 0.12);
+  animation: kickerGlow 3.2s ease-in-out infinite;
+  text-align: left;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+@keyframes kickerGlow {
+  0%,100% { text-shadow: 0 0 6px rgba(255,106,163,0.28), 0 0 12px rgba(255,106,163,0.12); }
+  50% { text-shadow: 0 0 10px rgba(255,106,163,0.45), 0 0 20px rgba(255,106,163,0.18); }
+}
+
+/* Title (left-aligned) */
+.title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(26px, 4.8vw, 42px);
+  margin: 6px 0 12px;
+  color: #f8f8f8;
+  line-height: 1.05;
+  text-align: left;
+}
+
+/* Subtext left aligned and typewriter font */
+.sub {
+  color: var(--muted-white);
+  margin-bottom: 18px;
+  max-width: 60ch;
+  font-family: SpecialElite, ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+/* typewriter container and cursor (smoother sustained glow) */
+.typewriter-line { display:inline-block; position:relative; padding-right: calc(var(--cursor-width) + 6px); }
+.blinking-cursor {
+  position: absolute;
+  right: 0;
+  top: 12%;
+  width: var(--cursor-width);
+  height: 1em;
+  background: var(--cursor-color);
+  border-radius: 2px;
+  box-shadow: 0 0 12px rgba(255,255,255,0.12), 0 0 28px rgba(255,180,210,0.06);
+  animation: cursorSmooth 1.2s ease-in-out infinite;
+  transform: translateX(6px);
+}
+@keyframes cursorSmooth {
+  0% { opacity: 1; box-shadow: 0 0 12px rgba(255,255,255,0.12), 0 0 28px rgba(255,180,210,0.06); }
+  40% { opacity: 0.3; box-shadow: 0 0 10px rgba(255,255,255,0.06), 0 0 18px rgba(255,180,210,0.03); }
+  60% { opacity: 0.3; }
+  100% { opacity: 1; box-shadow: 0 0 14px rgba(255,255,255,0.16), 0 0 34px rgba(255,180,210,0.08); }
+}
+
+/* CTA (left aligned area; button centered visually but fine) */
+.cta {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background: linear-gradient(90deg, var(--pink-cta-start), var(--pink-cta-end));
+  color:white;
+  padding:12px 20px;
+  border-radius:12px;
+  font-weight:700;
+  text-decoration:none;
+  cursor:pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 8px 24px rgba(255, 80, 160, 0.08);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.cta:hover {
+  transform: translateY(-3px);
+  background: linear-gradient(90deg, #ffffff, #ededed);
+  color: var(--pink-cta-end);
+  box-shadow: 0 0 30px rgba(255,120,180,0.25);
+}
+
+/* Layout: ensure inner content is left aligned */
+.glass > div { width: 100%; text-align: left; }
+
+/* Responsive */
+@media (max-width: 720px) {
+  .glass { padding: 24px; }
+  .title { font-size: clamp(20px, 8vw, 34px); }
+  .petal-canvas { image-rendering: auto; }
 }
