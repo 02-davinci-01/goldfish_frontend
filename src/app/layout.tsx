@@ -2,6 +2,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
 import AudioRoot from "@/components/AudioRoot";
+import PrewarmClient from "@/components/Prewarm/PrewarmClient";
 
 export const metadata = {
   title: "goldFish's Burfffdayy",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       </head>
       <body>
         <AudioRoot />
+        <PrewarmClient path="/" timeout={2500} />
         {children}
       </body>
     </html>
