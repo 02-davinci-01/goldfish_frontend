@@ -9,7 +9,11 @@ export default function Page() {
       <PetalCanvas />
 
       <div className="hero-wrap">
-        <div className="glass" role="region" aria-label="Birthday hero section">
+        <div
+          className="glass enterAnimate"
+          role="region"
+          aria-label="Birthday hero section"
+        >
           <div className="mac-bar" aria-hidden>
             <div className="mac-dots">
               <span className="mac-dot red" />
@@ -21,17 +25,26 @@ export default function Page() {
             </div>
           </div>
 
-          <div style={{ paddingTop: 42 }}>
-            <div className="kicker">and it’s</div>
+          <div className="glassInner">
+            <div className="kicker bodyFadeA">and it’s</div>
 
-            <h1 className="title">goldFish's Burfffdayy</h1>
+            <h1 className="title bodyFadeB">{"goldFish" + "'s Burfffdayy"}</h1>
 
-            <p className="sub typewriter-line">
-              オレンジの太陽に花びらを隠す
+            <p className="sub typewriter-line bodyFadeC" aria-live="polite">
+              <span className="typewriter-text">
+                オレンジの太陽に花びらを隠す
+              </span>
               <span className="blinking-cursor" aria-hidden />
             </p>
 
-            <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                marginTop: 12,
+              }}
+              className="bodyFadeD"
+            >
               <Link href="/enter" className="cta" aria-label="Enter the world">
                 enter the world
               </Link>

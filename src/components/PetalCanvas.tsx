@@ -4,35 +4,43 @@ import { useEffect, useRef } from "react";
 
 /**
  * PetalCanvas.tsx
- * - TypeScript-safe falling petals animation
- * - Subtle parallax responsiveness to cursor movement
+ * - Typed falling petals animation
+ * - Responsive to cursor movements
  * - Uses /public/petal.png
  */
 
 export default function PetalCanvas() {
-  const canvasRef = useRef<any>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    // Create a non-null alias so TypeScript knows it won't be null in inner scopes
+    const canvasEl: HTMLCanvasElement = canvas;
+
+    const ctx = canvasEl.getContext("2d");
     if (!ctx) return;
     const ctx2 = ctx as CanvasRenderingContext2D;
 
-    let width = (canvas.width = window.innerWidth);
-    let height = (canvas.height = window.innerHeight);
+    let width = (canvasEl.width = window.innerWidth);
+    let height = (canvasEl.height = window.innerHeight);
 
     const TOTAL = 100;
-    const petals: Petal[] = [];
+    const petals: Array<Petal> = [];
 
     const petalImg = new Image();
     petalImg.src = "/petal.png";
     petalImg.crossOrigin = "anonymous";
 
     // subtle cursor motion influence
-    let cursor = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
+    const cursor = {
+      x: width / 2,
+      y: height / 2,
+      targetX: width / 2,
+      targetY: height / 2,
+    };
     let lastMoveTime = Date.now();
 
     class Petal {
@@ -48,7 +56,7 @@ export default function PetalCanvas() {
 
       constructor() {
         this.x = Math.random() * width;
-        this.y = (Math.random() * height * 2) - height;
+        this.y = Math.random() * height - height;
         this.w = 25 + Math.random() * 15;
         this.h = 20 + Math.random() * 10;
         this.opacity = Math.min(0.95, this.w / 40);
@@ -60,7 +68,7 @@ export default function PetalCanvas() {
 
       respawn() {
         this.x = -Math.random() * 200;
-        this.y = (Math.random() * height * 2) - height;
+        this.y = Math.random() * height - height;
         this.xSpeed = 1.5 + Math.random() * 2;
         this.ySpeed = 1 + Math.random() * 1;
         this.flip = Math.random() * Math.PI * 2;
@@ -82,14 +90,19 @@ export default function PetalCanvas() {
         const drawH = this.h * scaleY;
 
         ctx2.filter = "saturate(110%) hue-rotate(-6deg) brightness(1.02)";
-        ctx2.drawImage(petalImg, Math.round(this.x), Math.round(this.y), Math.round(drawW), Math.round(drawH));
+        ctx2.drawImage(
+          petalImg,
+          Math.round(this.x),
+          Math.round(this.y),
+          Math.round(drawW),
+          Math.round(drawH)
+        );
         ctx2.filter = "none";
         ctx2.restore();
       }
 
       animate() {
-        // subtle parallax with cursor influence
-        const dx = (cursor.x - width / 2) / width; // normalized -0.5..0.5
+        const dx = (cursor.x - width / 2) / width;
         const dy = (cursor.y - height / 2) / height;
 
         this.x += this.xSpeed * (0.6 + Math.sin(this.flip) * 0.05) + dx * 1.2;
@@ -107,14 +120,12 @@ export default function PetalCanvas() {
     function render() {
       ctx2.clearRect(0, 0, width, height);
 
-      // smoothly ease cursor motion for a "lagged" feel
       const now = Date.now();
       const idle = now - lastMoveTime > 3000;
       if (!idle) {
         cursor.x += (cursor.targetX - cursor.x) * 0.05;
         cursor.y += (cursor.targetY - cursor.y) * 0.05;
       } else {
-        // ease back to center when idle
         cursor.x += (width / 2 - cursor.x) * 0.02;
         cursor.y += (height / 2 - cursor.y) * 0.02;
       }
@@ -124,22 +135,21 @@ export default function PetalCanvas() {
     }
 
     function handleResize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      width = canvasEl.width = window.innerWidth;
+      height = canvasEl.height = window.innerHeight;
       petals.forEach((p) => {
         if (p.y > height + 200) p.y = -Math.random() * height;
       });
     }
 
-    // mouse and touch events
     function handleMove(e: MouseEvent | TouchEvent) {
-      if ("touches" in e) {
+      if ("touches" in e && e.touches.length) {
         const t = e.touches[0];
         cursor.targetX = t.clientX;
         cursor.targetY = t.clientY;
-      } else {
-        cursor.targetX = e.clientX;
-        cursor.targetY = e.clientY;
+      } else if ("clientX" in e) {
+        cursor.targetX = (e as MouseEvent).clientX;
+        cursor.targetY = (e as MouseEvent).clientY;
       }
       lastMoveTime = Date.now();
     }
@@ -148,7 +158,6 @@ export default function PetalCanvas() {
     window.addEventListener("touchmove", handleMove, { passive: true });
     window.addEventListener("resize", handleResize);
 
-    // initialize petals after image loads
     if (petalImg.complete && petalImg.naturalWidth) {
       makePetals();
       render();

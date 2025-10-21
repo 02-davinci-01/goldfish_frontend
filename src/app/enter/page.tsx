@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import PetalCanvas from "../../components/PetalCanvas";
 import styles from "./login.module.css";
 
@@ -33,13 +34,11 @@ export default function EnterPage() {
   const cards = [
     {
       front: "username",
-      back:
-        "The name with which thou hast been enshrined; the sea creature thou art, of orange hue and gentle grace",
+      back: "The name with which thou hast been enshrined; the sea creature thou art, of orange hue and gentle grace",
     },
     {
       front: "password",
-      back:
-        "This creature of the deep speaketh but in twain; two words alone escape its mouth: b**bh*p.",
+      back: "This creature of the deep speaketh but in twain; two words alone escape its mouth: b**bh*p.",
     },
     {
       front: "??",
@@ -73,21 +72,44 @@ export default function EnterPage() {
           <div className={styles.macSeparator} aria-hidden />
 
           <div className={styles.photoWrap} aria-hidden>
-            <img src="/goldfish.png" alt="goldfish" className={styles.goldfish} />
+            <Image
+              src="/goldfish.png"
+              alt="goldfish"
+              width={160}
+              height={160}
+              className={styles.goldfish}
+              priority
+            />
           </div>
 
           <div className={`${styles.modalBody} ${styles.bodyAnimate}`}>
             <h2 className={styles.modalTitle}>
-              <span className={styles.titleWrap}>
-                <span className={styles.titlePink}>enter</span>
-                <span className={styles.titleRest}>&nbsp;the glassworld</span>
+              <span
+                className={`${styles.titleWrap} ${styles.typewriterContainer}`}
+              >
+                <span
+                  className={`${styles.titlePink} ${styles.typewriterText}`}
+                >
+                  enter
+                </span>
+                <span
+                  className={`${styles.titleRest} ${styles.typewriterText}`}
+                >
+                  &nbsp;the glassworld
+                </span>
                 <span className={styles.blinkingCursor} aria-hidden />
               </span>
             </h2>
 
-            <p className={styles.modalSub}>painted on the thin veil — whisper the name and the ocean will open</p>
+            <p className={styles.modalSub}>
+              The Enigma of the Divine Hermit 🐸
+            </p>
 
-            <form onSubmit={handleSubmit} className={styles.form} autoComplete="on">
+            <form
+              onSubmit={handleSubmit}
+              className={styles.form}
+              autoComplete="on"
+            >
               <label className={styles.label}>
                 <span className={styles.labelText}>username</span>
                 <input
@@ -110,14 +132,18 @@ export default function EnterPage() {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  placeholder="the tide-word..."
+                  placeholder="the two words a fish can utter"
                   required
                 />
               </label>
 
               <div className={styles.formRow}>
-                <button type="submit" className={styles.enterBtn} aria-label="Log in">
-                  open the tide
+                <button
+                  type="submit"
+                  className={styles.enterBtn}
+                  aria-label="Log in"
+                >
+                  aomt i am
                 </button>
 
                 <Link href="/" className={styles.smallLink} aria-label="Back">
@@ -126,11 +152,16 @@ export default function EnterPage() {
               </div>
             </form>
 
-            <div className={`${styles.hintGrid} ${styles.gridAnimate}`} aria-live="polite">
+            <div
+              className={`${styles.hintGrid} ${styles.gridAnimate}`}
+              aria-live="polite"
+            >
               {cards.map((card, i) => (
                 <button
                   key={i}
-                  className={`${styles.card} ${flipped[i] ? styles.flipped : ""}`}
+                  className={`${styles.card} ${
+                    flipped[i] ? styles.flipped : ""
+                  }`}
                   onClick={() => toggleFlip(i)}
                   aria-pressed={flipped[i]}
                   aria-label={`Hint card ${i + 1}`}

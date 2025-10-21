@@ -1,4 +1,4 @@
-/* globals.css — final tweaks: left-aligned, pink kicker, smoother sustained cursor glow */
+/* globals.css — final tweaks: homepage animations + typewriter effect */
 
 /* Reset */
 *,
@@ -8,17 +8,16 @@
 /* Variables */
 :root {
   --bg-dark: #05030a;
-  --glass-bg: rgba(25, 25, 30, 0.85); /* slightly less transparent - darker */
+  --glass-bg: rgba(25, 25, 30, 0.85);
   --glass-border: rgba(255, 255, 255, 0.06);
-  --accent-pink: #ff6aa3; /* kicker pink */
+  --accent-pink: #ff6aa3;
   --pink-cta-start: #ff7ab6;
   --pink-cta-end: #ff66a3;
   --muted-white: rgba(255, 255, 255, 0.78);
   --radius: 16px;
   --cursor-width: 10px;
   --cursor-color: rgba(255, 255, 255, 0.95);
-
-  /* elevation tokens */
+  --anim-duration: 640ms;
   --shadow-strong: 0 30px 60px rgba(0,0,0,0.75);
   --shadow-soft: 0 8px 24px rgba(0,0,0,0.45);
 }
@@ -66,6 +65,9 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(110%);
   box-shadow: var(--shadow-strong);
   transition: transform 220ms ease, box-shadow 220ms ease;
+  transform-origin: center;
+  opacity: 0;
+  transform: translateY(10px) rotateX(6deg) scale(0.996);
 }
 .glass:hover { transform: translateY(-4px); box-shadow: 0 36px 88px rgba(0,0,0,0.78); }
 
@@ -91,6 +93,31 @@ body {
   pointer-events: none;
 }
 
+/* glass inner wrapper to stagger body items */
+.glassInner { position: relative; z-index: 4; }
+
+/* Entrance animation for .glass on homepage */
+.enterAnimate {
+  animation: modalEnter var(--anim-duration) cubic-bezier(.2,.9,.25,1) both;
+}
+@keyframes modalEnter {
+  0% { opacity: 0; transform: translateY(18px) rotateX(6deg) scale(0.992); filter: blur(4px); }
+  60% { opacity: 1; transform: translateY(-6px) rotateX(2deg) scale(1.006); filter: blur(0.6px); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0) scale(1); filter: blur(0); }
+}
+
+/* staggered fade-ins for inside elements */
+.bodyFadeA { opacity: 0; transform: translateY(6px) scale(0.996); animation: bodyItemIn calc(var(--anim-duration) + 80ms) cubic-bezier(.2,.9,.25,1) both; animation-delay: 140ms; }
+.bodyFadeB { opacity: 0; transform: translateY(8px) scale(0.996); animation: bodyItemIn calc(var(--anim-duration) + 120ms) cubic-bezier(.2,.9,.25,1) both; animation-delay: 200ms; }
+.bodyFadeC { opacity: 0; transform: translateY(8px) scale(0.996); animation: bodyItemIn calc(var(--anim-duration) + 160ms) cubic-bezier(.2,.9,.25,1) both; animation-delay: 240ms; }
+.bodyFadeD { opacity: 0; transform: translateY(8px) scale(0.996); animation: bodyItemIn calc(var(--anim-duration) + 200ms) cubic-bezier(.2,.9,.25,1) both; animation-delay: 320ms; }
+
+@keyframes bodyItemIn {
+  0% { opacity: 0; transform: translateY(10px) scale(0.994); filter: blur(6px); }
+  60% { opacity: 1; transform: translateY(-6px) scale(1.004); filter: blur(0.6px); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+
 /* Macbar */
 .mac-bar { display:flex; align-items:center; gap:12px; height:36px; width:100%; position:absolute; left:0; top:8px; padding:0 14px; pointer-events:none; }
 .mac-dots { display:flex; gap:8px; } .mac-dot { width:10px; height:10px; border-radius:50%; } .mac-dot.red{background:#ff5f56} .mac-dot.yellow{background:#ffbd2e} .mac-dot.green{background:#28c93f}
@@ -107,21 +134,17 @@ body {
   text-shadow:
     0 0 6px rgba(255, 106, 163, 0.28),
     0 0 12px rgba(255, 106, 163, 0.12);
-  animation: kickerGlow 3.2s ease-in-out infinite;
   text-align: left;
   display: inline-block;
-  margin-bottom: 8px;
-}
-@keyframes kickerGlow {
-  0%,100% { text-shadow: 0 0 6px rgba(255,106,163,0.28), 0 0 12px rgba(255,106,163,0.12); }
-  50% { text-shadow: 0 0 10px rgba(255,106,163,0.45), 0 0 20px rgba(255,106,163,0.18); }
+  margin-top:18px;
+  margin-bottom: 2px;
 }
 
 /* Title (left-aligned) */
 .title {
   font-family: "Playfair Display", serif;
   font-size: clamp(26px, 4.8vw, 42px);
-  margin: 6px 0 12px;
+  margin: 2px 0 12px;
   color: #f8f8f8;
   line-height: 1.05;
   text-align: left;
@@ -134,12 +157,29 @@ body {
   max-width: 60ch;
   font-family: SpecialElite, ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
   font-size: 0.95rem;
-  white-space: pre-wrap;
+  white-space: nowrap;
   text-align: left;
 }
 
-/* typewriter container and cursor (smoother sustained glow) */
+/* Typewriter: text revealed by steps-based width animation */
 .typewriter-line { display:inline-block; position:relative; padding-right: calc(var(--cursor-width) + 6px); }
+.typewriter-text {
+  display:inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 0ch;
+  /* number of steps can be tuned; steps(24) gives a slightly slower "typing" */
+  animation: typing 3.2s steps(24) forwards;
+  animation-delay: 320ms; /* start slightly after the body fade */
+  font-family: SpecialElite, ui-monospace, monospace;
+  letter-spacing: 0.02em;
+}
+@keyframes typing {
+  from { width: 0ch; }
+  to { width: 24ch; } /* show up to 24 characters; longer text will clip — the string will show fully if shorter */
+}
+
+/* blinking cursor sits after the typewriter-text and continues to blink during and after typing */
 .blinking-cursor {
   position: absolute;
   right: 0;
@@ -155,6 +195,8 @@ body {
   animation: cursorSmooth 1.2s ease-in-out infinite;
   transform: translateX(6px);
 }
+
+/* keep previous cursor animation */
 @keyframes cursorSmooth {
   0% { opacity: 1; box-shadow: 0 0 14px rgba(255,180,210,0.12), 0 0 34px rgba(255,106,163,0.06); }
   40% { opacity: 0.3; box-shadow: 0 0 8px rgba(255,180,210,0.06), 0 0 18px rgba(255,106,163,0.04); }
@@ -162,7 +204,7 @@ body {
   100% { opacity: 1; box-shadow: 0 0 18px rgba(255,180,210,0.16), 0 0 44px rgba(255,106,163,0.12); }
 }
 
-/* CTA (left aligned area; button centered visually but fine) */
+/* CTA */
 .cta {
   display:inline-flex;
   align-items:center;
@@ -180,17 +222,8 @@ body {
   text-decoration: none;
   -webkit-tap-highlight-color: transparent;
 }
-/* improved focus visible for accessibility */
-.cta:focus-visible {
-  outline: 3px solid rgba(255,106,163,0.12);
-  outline-offset: 6px;
-}
-.cta:hover {
-  transform: translateY(-3px);
-  background: linear-gradient(90deg, #ffffff, #ededed);
-  color: var(--pink-cta-end);
-  box-shadow: 0 0 30px rgba(255,120,180,0.25);
-}
+.cta:focus-visible { outline: 3px solid rgba(255,106,163,0.12); outline-offset: 6px; }
+.cta:hover { transform: translateY(-3px); background: linear-gradient(90deg, #ffffff, #ededed); color: var(--pink-cta-end); box-shadow: 0 0 30px rgba(255,120,180,0.25); }
 
 /* Layout: ensure inner content is left aligned */
 .glass > div { width: 100%; text-align: left; }
@@ -200,4 +233,11 @@ body {
   .glass { padding: 24px; }
   .title { font-size: clamp(20px, 8vw, 34px); }
   .petal-canvas { image-rendering: auto; }
+  .typewriter-text { animation: typing 3.2s steps(20) forwards; } /* slightly fewer steps on small screens */
+}
+
+/* Respect reduced-motion: disable typing animation, reveal text immediately */
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-text { width: auto !important; animation: none !important; }
+  .enterAnimate, .bodyFadeA, .bodyFadeB, .bodyFadeC, .bodyFadeD { animation: none !important; transform: none !important; opacity: 1 !important; }
 }
