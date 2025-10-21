@@ -1,0 +1,46 @@
+.breadcrumb {
+  display: inline-block;
+  padding: 8px 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(30, 10, 20, 0.66),
+    rgba(30, 10, 30, 0.44)
+  );
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: #fff;
+  font-family: SpecialElite, monospace;
+  box-shadow: 0 8px 30px rgba(255, 102, 163, 0.06);
+  position: relative;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.breadcrumb::after {
+  content: "";
+  position: absolute;
+  right: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 102, 163, 0.95),
+    rgba(255, 102, 163, 0.72)
+  );
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(255, 102, 163, 0.28);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
