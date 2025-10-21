@@ -707,7 +707,7 @@ export default function DashboardPage() {
           <div className={`${styles.glassPanel} ${styles.spotifyPanel}`}>
             <h4 className={styles.spotifyTitle}>
               <span className={styles.typewriterSmall}>
-                <span>Current - </span>
+                <span>Currents - </span>
                 <span className={styles.typewriterPink}>Tame Impala</span>
               </span>
             </h4>
