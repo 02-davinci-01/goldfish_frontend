@@ -5,7 +5,6 @@ import PetalCanvas from "../../components/PetalCanvas";
 import Breadcrumb from "../../components/Breadcrumb/Breadcrumb";
 import styles from "./dashboard.module.css";
 
-/* Goldfish facts */
 const SAMPLE_FACTS = [
   "Goldfish have a memory span of at least three months — they learn fast!",
   "Goldfish are social animals and can recognize human faces (yes, even yours).",
@@ -17,7 +16,6 @@ const SAMPLE_FACTS = [
   "Goldfish do not judge your life choices — loudly and with watery sympathy.",
 ];
 
-/* 🐸 Hermit Froggie’s arcane sayings */
 const FROGGIE_QUOTES = [
   "Verily, leap not before the moon hath risen thrice.",
   "In the still pond, the truth shimmereth beneath the ripples.",
@@ -38,19 +36,32 @@ const FROGGIE_QUOTES = [
 function zeroPad(n: number) {
   return n < 10 ? `0${n}` : String(n);
 }
-
 function toDateTimeLocal(d: Date) {
-  const yyyy = d.getFullYear();
-  const mm = zeroPad(d.getMonth() + 1);
-  const dd = zeroPad(d.getDate());
-  const hh = zeroPad(d.getHours());
-  const min = zeroPad(d.getMinutes());
-  return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+  return `${d.getFullYear()}-${zeroPad(d.getMonth() + 1)}-${zeroPad(
+    d.getDate()
+  )}T${zeroPad(d.getHours())}:${zeroPad(d.getMinutes())}`;
+}
+function ordinalSuffix(n: number) {
+  const j = n % 10,
+    k = n % 100;
+  if (k >= 11 && k <= 13) return "th";
+  if (j === 1) return "st";
+  if (j === 2) return "nd";
+  if (j === 3) return "rd";
+  return "th";
+}
+function formatPrettyDate(d: Date) {
+  const weekday = d.toLocaleString(undefined, { weekday: "long" });
+  const day = d.getDate();
+  const suffix = ordinalSuffix(day);
+  const month = d.toLocaleString(undefined, { month: "short" });
+  return `${weekday}, ${day}${suffix} ${month}: ${zeroPad(
+    d.getHours()
+  )}:${zeroPad(d.getMinutes())}`;
 }
 
-/* ---------- Custom small dropdown (reusable for location) ---------- */
+/* ---------- Custom small dropdown ---------- */
 type Option = { value: string; label: string };
-
 function GlassSelect({
   value,
   onChange,
@@ -59,7 +70,7 @@ function GlassSelect({
   id,
 }: {
   value: string | null;
-  onChange: (v: string) => void; // explicit: always a string
+  onChange: (v: string) => void;
   options: Option[];
   placeholder?: string;
   id?: string;
@@ -68,15 +79,17 @@ function GlassSelect({
   const toggleRef = useRef<HTMLButtonElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  React.useEffect(() => {
-    function onDoc(e: MouseEvent) {
-      if (!toggleRef.current) return;
-      if (toggleRef.current.contains(e.target as Node)) return;
-      if (listRef.current && listRef.current.contains(e.target as Node)) return;
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (
+        toggleRef.current?.contains(e.target as Node) ||
+        listRef.current?.contains(e.target as Node)
+      )
+        return;
       setOpen(false);
     }
-    if (open) document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
+    if (open) document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
   return (
@@ -85,17 +98,15 @@ function GlassSelect({
         id={id}
         ref={toggleRef}
         type="button"
-        aria-haspopup="listbox"
-        aria-expanded={open}
         className={styles.selectToggle}
-        onClick={() => setOpen((s) => !s)}
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
       >
         <span className={value ? styles.selectValue : styles.selectPlaceholder}>
           {value
             ? options.find((o) => o.value === value)?.label ?? value
             : placeholder}
         </span>
-
         <svg
           className={styles.chev}
           width="14"
@@ -103,7 +114,7 @@ function GlassSelect({
           viewBox="0 0 24 24"
           aria-hidden
         >
-          <path fill="currentColor" d="M7 10l5 5 5-5z"></path>
+          <path fill="currentColor" d="M7 10l5 5 5-5z" />
         </svg>
       </button>
 
@@ -123,9 +134,10 @@ function GlassSelect({
                 value === opt.value ? styles.optionSelected : ""
               }`}
               onClick={() => {
-                // pass a definite string (opt.value)
-                onChange(opt.value);
+                // Close first to guarantee immediate close in all browsers
                 setOpen(false);
+                // small microtick to ensure close DOM update before any parent-driven re-render surprises
+                setTimeout(() => onChange(opt.value), 0);
               }}
             >
               {opt.label}
@@ -137,36 +149,31 @@ function GlassSelect({
   );
 }
 
-/* ---------- CalendarModal (manual time inputs + breadcrumb) ---------- */
-type CalendarModalProps = {
-  initial?: string | null;
-  onClose: () => void;
-  onConfirm: (datetimeLocal: string) => void;
-  open: boolean;
-};
-
+/* ---------- CalendarModal ---------- */
 function CalendarModal({
   initial,
   onClose,
   onConfirm,
   open,
-}: CalendarModalProps) {
-  const now = React.useMemo(
-    () => (initial ? new Date(initial) : new Date()),
-    [initial]
-  );
-  const [viewDate, setViewDate] = useState<Date>(
+}: {
+  initial?: string | null;
+  onClose: () => void;
+  onConfirm: (datetimeLocal: string) => void;
+  open: boolean;
+}) {
+  // `now` is stable and not dependent on `initial` — avoid unnecessary deps
+  const now = useMemo(() => new Date(), []);
+  const [viewDate, setViewDate] = useState(
     new Date(now.getFullYear(), now.getMonth(), 1)
   );
   const [selectedDay, setSelectedDay] = useState<number | null>(
     initial ? new Date(initial).getDate() : null
   );
-
-  const [hourStr, setHourStr] = useState<string>(zeroPad(now.getHours()));
-  const [minStr, setMinStr] = useState<string>(zeroPad(now.getMinutes()));
+  const [hourStr, setHourStr] = useState(zeroPad(now.getHours()));
+  const [minStr, setMinStr] = useState(zeroPad(now.getMinutes()));
   const [modalBreadcrumb, setModalBreadcrumb] = useState<string | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initial) {
       const d = new Date(initial);
       setViewDate(new Date(d.getFullYear(), d.getMonth(), 1));
@@ -183,7 +190,7 @@ function CalendarModal({
     setModalBreadcrumb(null);
   }, [initial, open]);
 
-  const monthDays = React.useMemo(() => {
+  const monthDays = useMemo(() => {
     const year = viewDate.getFullYear();
     const month = viewDate.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -196,9 +203,6 @@ function CalendarModal({
   }, [viewDate]);
 
   if (!open) return null;
-
-  const monthName = viewDate.toLocaleString(undefined, { month: "long" });
-  const year = viewDate.getFullYear();
 
   function validateTimeInputs(hStr: string, mStr: string) {
     if (!/^\d{1,2}$/.test(hStr) || !/^\d{1,2}$/.test(mStr)) {
@@ -216,6 +220,9 @@ function CalendarModal({
     if (m < 0 || m > 59) return { ok: false, message: "minute must be 0–59" };
     return { ok: true, hour: h, minute: m };
   }
+
+  const monthName = viewDate.toLocaleString(undefined, { month: "long" });
+  const year = viewDate.getFullYear();
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -347,7 +354,7 @@ function CalendarModal({
                 }
                 const v = validateTimeInputs(hourStr, minStr);
                 if (!v.ok) {
-                  //@ts-expect-error "hello"
+                  //@ts-expect-error"whatever"
                   setModalBreadcrumb(v.message);
                   return;
                 }
@@ -358,6 +365,13 @@ function CalendarModal({
                   v.hour!,
                   v.minute!
                 );
+                // Prevent past selections:
+                if (newDate.getTime() <= Date.now()) {
+                  setModalBreadcrumb(
+                    "that time hath already passed — choose again"
+                  );
+                  return;
+                }
                 onConfirm(toDateTimeLocal(newDate));
                 setModalBreadcrumb(null);
                 onClose();
@@ -377,7 +391,6 @@ export default function DashboardPage() {
   const [email, setEmail] = useState("");
   const [location, setLocation] = useState<string | null>(null);
   const [datetime, setDatetime] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   const [secondsLeft, setSecondsLeft] = useState<number>(0);
@@ -386,6 +399,13 @@ export default function DashboardPage() {
   const [cbFlipped, setCbFlipped] = useState(false);
   const [froggieFlipped, setFroggieFlipped] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+
+  // Breadcrumb notification state (re-usable)
+  const [crumbText, setCrumbText] = useState("");
+  const [crumbType, setCrumbType] = useState<"info" | "success" | "error">(
+    "info"
+  );
+  const [crumbVisible, setCrumbVisible] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -396,7 +416,6 @@ export default function DashboardPage() {
     const timer = setInterval(() => {
       const now = Date.now();
       const nowDate = new Date();
-      // changed `let` → `const` because we mutate date via setFullYear(), not reassign the variable
       const target = new Date(nowDate.getFullYear(), 9, 31, 0, 0, 0);
       if (target.getTime() <= now) target.setFullYear(target.getFullYear() + 1);
       setSecondsLeft(Math.floor((target.getTime() - now) / 1000));
@@ -407,20 +426,90 @@ export default function DashboardPage() {
     };
   }, []);
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!email || !location || !datetime) {
-      setMessage("please fill all fields before submitting");
-      return;
+  function showBreadcrumb(
+    text: string,
+    type: "info" | "success" | "error" = "info",
+    timeout = 3200
+  ) {
+    setCrumbText(text);
+    setCrumbType(type);
+    setCrumbVisible(true);
+    if (timeout > 0) {
+      setTimeout(() => setCrumbVisible(false), timeout);
     }
-    setMessage("request received — the cosmos hath noted thy desire 🌸");
-    setTimeout(() => setMessage(null), 4200);
   }
 
   // wrapper to normalize possible undefined -> null and fix TS mismatch
   const handleConfirm = (val?: string) => {
     setDatetime(val ?? null);
   };
+
+  // POST to backend when form is submitted
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!email || !location || !datetime) {
+      showBreadcrumb("please fill all fields before submitting", "error");
+      return;
+    }
+
+    // prepare payload
+    const iso = datetime;
+    const dt = new Date(iso);
+    const pretty = formatPrettyDate(dt);
+
+    const payload = {
+      email,
+      date: pretty,
+      location,
+    };
+
+    // Build URL from env var or fallback
+    const base =
+      process.env.NEXT_PUBLIC_BACKEND_URL &&
+      process.env.NEXT_PUBLIC_BACKEND_URL.trim()
+        ? process.env.NEXT_PUBLIC_BACKEND_URL.replace(/\/$/, "")
+        : typeof window !== "undefined"
+        ? window.location.origin
+        : "";
+
+    const endpoint = `${base}/email/send`;
+
+    try {
+      showBreadcrumb("sending...", "info", 10000); // longer while waiting
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      type ServerResp = {
+        message?: string;
+        error?: string;
+        [k: string]: unknown;
+      };
+      let data: ServerResp | null = null;
+      const ct = res.headers.get("content-type") ?? "";
+      if (ct.includes("application/json")) {
+        // safe parse into typed object
+        data = (await res.json()) as ServerResp;
+      }
+
+      if (!res.ok) {
+        const msg =
+          (data && (data.message || data.error)) ||
+          `server error: ${res.status}`;
+        showBreadcrumb(msg, "error");
+        return;
+      }
+
+      // success
+      showBreadcrumb("email sent! enjoy your time here:)", "success");
+    } catch (err) {
+      console.error("send email error:", err);
+      showBreadcrumb("could not send email — try again later", "error");
+    }
+  }
 
   const formattedCountdown = useMemo(() => {
     const s = secondsLeft;
@@ -431,9 +520,22 @@ export default function DashboardPage() {
     return `${days}d ${zeroPad(hrs)}h ${zeroPad(mins)}m ${zeroPad(secs)}s`;
   }, [secondsLeft]);
 
+  function randomFroggie() {
+    return FROGGIE_QUOTES[Math.floor(Math.random() * FROGGIE_QUOTES.length)];
+  }
+
   return (
     <div className={styles.page}>
       <PetalCanvas />
+
+      {/* Breadcrumb notifications (controlled use) */}
+      <Breadcrumb
+        text={crumbText}
+        type={crumbType}
+        visible={crumbVisible}
+        onClose={() => setCrumbVisible(false)}
+      />
+
       <div className={styles.container}>
         <div className={styles.mainColumn}>
           <div className={`${styles.glassPanel} ${styles.enterAnimate}`}>
@@ -468,7 +570,7 @@ export default function DashboardPage() {
                   <GlassSelect
                     id="location-select"
                     value={location}
-                    onChange={(v) => setLocation(v)} // v is always string
+                    onChange={(v) => setLocation(v)}
                     options={[
                       { value: "METRO", label: "METRO" },
                       { value: "LODHI", label: "LODHI" },
@@ -501,8 +603,6 @@ export default function DashboardPage() {
                     </button>
                   </div>
                 </div>
-
-                {message && <div className={styles.message}>{message}</div>}
               </form>
 
               <div className={styles.cardsRow}>
@@ -524,7 +624,7 @@ export default function DashboardPage() {
                       <div className={styles.cardBackText}>
                         itna lalach nhi karna chahiye.
                         <br />
-                        KHEKHEKHEKHEKHEKHE
+                        KHEKHEKHEKHEKHEKHEKHE
                       </div>
                     </div>
                   </div>
@@ -536,11 +636,7 @@ export default function DashboardPage() {
                     froggieFlipped ? styles.flipped : ""
                   } ${styles.froggieCard}`}
                   onMouseEnter={() => {
-                    setFroggieQuote(
-                      FROGGIE_QUOTES[
-                        Math.floor(Math.random() * FROGGIE_QUOTES.length)
-                      ]
-                    );
+                    setFroggieQuote(randomFroggie());
                     setFroggieFlipped(true);
                   }}
                   onMouseLeave={() => setFroggieFlipped(false)}

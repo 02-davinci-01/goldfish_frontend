@@ -3,13 +3,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-/**
- * AudioRoot client component (hydration-safe + typed)
- * - Uses window.__goldfishAudio singleton (typed) so audio persists across SPA navigation
- * - Reads/persists mute preference only after hydration (avoids SSR mismatches)
- * - Minimal, accessible controls with hover glow
- */
-
 /* typed global for window.__goldfishAudio */
 declare global {
   interface Window {
@@ -32,10 +25,8 @@ export default function AudioRoot() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // mark mounted so subsequent effects read localStorage
     setIsMounted(true);
 
-    // reuse singleton if present (HMR / remount safe)
     const existing = window.__goldfishAudio;
     if (existing) {
       audioRef.current = existing;
@@ -49,9 +40,8 @@ export default function AudioRoot() {
     audio.preload = "auto";
     audio.loop = true;
     audio.volume = 0.75;
-    audio.muted = true; // start muted; sync real pref after hydration
+    audio.muted = true;
 
-    // keep offscreen
     audio.style.position = "fixed";
     audio.style.left = "-20000px";
     audio.style.top = "auto";
@@ -66,17 +56,16 @@ export default function AudioRoot() {
 
     (async () => {
       try {
-        await audio.play(); // try muted autoplay
+        await audio.play();
         setIsPlaying(true);
       } catch {
         setIsPlaying(false);
       }
     })();
 
-    // intentionally do NOT remove audio on unmount so it persists across SPA navigation
+    // intentionally keep audio across SPA navigation
   }, []);
 
-  // read saved mute pref only after hydration
   useEffect(() => {
     if (!isMounted) return;
     try {
@@ -90,11 +79,8 @@ export default function AudioRoot() {
     } catch {
       /* ignore */
     }
-    // run once after mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isMounted]);
 
-  // persist mute changes after hydration
   useEffect(() => {
     if (!isMounted) return;
     const audio = audioRef.current || window.__goldfishAudio;
@@ -144,7 +130,6 @@ export default function AudioRoot() {
     }
   };
 
-  /* ---------- styles (kept inline for drop-in) ---------- */
   const panelStyle: React.CSSProperties = {
     position: "fixed",
     right: 18,
@@ -219,7 +204,6 @@ export default function AudioRoot() {
       : "translateY(-1px)",
   };
 
-  // status label hidden before hydration to avoid SSR/CSR mismatch
   const statusLabel = isMounted
     ? isPlaying
       ? isMuted
