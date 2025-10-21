@@ -10,7 +10,7 @@ import { useEffect, useRef } from "react";
  */
 
 export default function PetalCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef = useRef<any>(null);
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {

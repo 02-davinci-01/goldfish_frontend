@@ -27,7 +27,7 @@ export default function Page() {
             <h1 className="title">goldFish's Burfffdayy</h1>
 
             <p className="sub typewriter-line">
-              桜 (sakura) — cherry blossoms: a fleeting, poetic bloom that reminds us of life's graceful transience.
+              オレンジの太陽に花びらを隠す
               <span className="blinking-cursor" aria-hidden />
             </p>
 
