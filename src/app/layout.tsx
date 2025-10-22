@@ -79,12 +79,32 @@ function LoadingWrapper({ children }: { children: ReactNode }) {
   const fadeMs = 3000;
   const navigatedRef = useRef(false);
 
+  const [fadeState, setFadeState] = useState<"fade-in" | "fade-out">("fade-in");
+
   useEffect(() => {
+    // Pick an initial random quote
     setQuote(
       FROGGIE_LOADING_QUOTES[
         Math.floor(Math.random() * FROGGIE_LOADING_QUOTES.length)
       ]
     );
+
+    const interval = setInterval(() => {
+      // Start fade-out
+      setFadeState("fade-out");
+
+      // Wait for fade-out to finish (300ms), then switch quote & fade back in
+      setTimeout(() => {
+        setQuote(
+          FROGGIE_LOADING_QUOTES[
+            Math.floor(Math.random() * FROGGIE_LOADING_QUOTES.length)
+          ]
+        );
+        setFadeState("fade-in");
+      }, 300);
+    }, 5000); // every 5 seconds
+
+    return () => clearInterval(interval); // cleanup
   }, []);
 
   const { isSuccess, isError, refetch } = useQuery({
@@ -164,7 +184,7 @@ function LoadingWrapper({ children }: { children: ReactNode }) {
                   lineHeight: "1.4rem",
                 }}
               >
-                <span className="adviceText">“{quote}”</span>
+                <span className={`adviceText ${fadeState}`}>“{quote}”</span>
               </p>
             </div>
           </div>

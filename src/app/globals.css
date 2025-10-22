@@ -539,3 +539,18 @@ body {
     max-width: 36ch;
   }
 }
+
+/* smooth quote fade transitions */
+.adviceText {
+  display: inline-block;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.adviceText.fade-out {
+  opacity: 0;
+}
+
+.adviceText.fade-in {
+  opacity: 1;
+}
