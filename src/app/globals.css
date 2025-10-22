@@ -82,6 +82,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 48px 20px;
+  min-height: 100vh; /* ensure full viewport vertical centering */
+  text-align: center; /* center contents */
 }
 
 /* Darker less-transparent glass (no pink) */
@@ -98,6 +100,11 @@ body {
   transform-origin: center;
   opacity: 0;
   transform: translateY(10px) rotateX(6deg) scale(0.996);
+  display: flex; /* center contents */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .glass:hover {
   transform: translateY(-4px);
@@ -139,8 +146,12 @@ body {
 .glassInner {
   position: relative;
   z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* left align text elements */
+  justify-content: center;
+  text-align: left;
 }
-
 /* Entrance animation for .glass on homepage */
 .enterAnimate {
   animation: modalEnter var(--anim-duration) cubic-bezier(0.2, 0.9, 0.25, 1)
@@ -274,8 +285,7 @@ body {
   margin-top: 18px;
   margin-bottom: 2px;
 }
-
-/* Title (left-aligned) */
+/* Title (centered) */
 .title {
   font-family: "Playfair Display", serif;
   font-size: clamp(26px, 4.8vw, 42px);
@@ -284,8 +294,7 @@ body {
   line-height: 1.05;
   text-align: left;
 }
-
-/* Subtext left aligned and typewriter font */
+/* Subtext centered and typewriter font; allow wrapping */
 .sub {
   color: var(--muted-white);
   margin-bottom: 18px;
@@ -293,8 +302,10 @@ body {
   font-family: SpecialElite, ui-monospace, SFMono-Regular, Menlo, Monaco,
     "Roboto Mono", "Courier New", monospace;
   font-size: 0.95rem;
-  white-space: nowrap;
+  white-space: normal;
   text-align: left;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* Typewriter: text revealed by steps-based width animation */
@@ -323,7 +334,31 @@ body {
   } /* show up to 24 characters; longer text will clip — the string will show fully if shorter */
 }
 
-/* blinking cursor sits after the typewriter-text and continues to blink during and after typing */
+/* inline cursor — used on the heading so it sits right next to text */
+.inline-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1em;
+  background: var(--accent-pink);
+  margin-left: 8px; /* small gap between 'world' and cursor */
+  border-radius: 2px;
+  box-shadow: 0 0 8px rgba(255, 100, 160, 0.5);
+  animation: inlineBlink 1s step-end infinite;
+  vertical-align: middle;
+}
+@keyframes inlineBlink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* blinking cursor (absolute) kept for typewriter use elsewhere */
 .blinking-cursor {
   position: absolute;
   right: 0;
@@ -393,10 +428,9 @@ body {
   box-shadow: 0 0 30px rgba(255, 120, 180, 0.25);
 }
 
-/* Layout: ensure inner content is left aligned */
+/* Layout: ensure inner content is left aligned for other screens */
 .glass > div {
   width: 100%;
-  text-align: left;
 }
 
 /* Responsive */
@@ -429,5 +463,79 @@ body {
     animation: none !important;
     transform: none !important;
     opacity: 1 !important;
+  }
+}
+
+/* Fade transition between loading and homepage */
+.loading-root.fadeOut {
+  animation: loadingFadeOut 3s ease forwards;
+}
+@keyframes loadingFadeOut {
+  0% {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(-6px) scale(1.02);
+    pointer-events: none;
+  }
+}
+
+.fadeIn {
+  animation: fadeIn 900ms ease forwards;
+}
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px) scale(0.998);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---------- additions / modified rules ---------- */
+
+/* ensure glass clips overflowing text and allows inner glow */
+.glass {
+  overflow: hidden; /* << important: contain children visually */
+}
+
+/* advice text inside .sub — wrap safely */
+.sub {
+  color: var(--muted-white);
+  margin-bottom: 18px;
+  max-width: 60ch;
+  font-family: SpecialElite, ui-monospace, SFMono-Regular, Menlo, Monaco,
+    "Roboto Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+  white-space: normal; /* allow wrapping */
+  text-align: center;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* small wrapper for advice text to ensure it's contained */
+.adviceText {
+  display: inline-block;
+  max-width: 100%;
+  word-break: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+/* petal glow state removed as requested */
+
+/* make sure text doesn't run outside on small screens */
+@media (max-width: 720px) {
+  .sub,
+  .adviceText {
+    font-size: 0.9rem;
+    max-width: 36ch;
   }
 }
